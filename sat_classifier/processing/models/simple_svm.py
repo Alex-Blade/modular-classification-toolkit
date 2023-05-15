@@ -79,11 +79,8 @@ class SVM(Model):
         self.dataset = None
         self.class_map = {}
 
-    def fit_unlabeled(self, data: str):
-        raise NotImplementedError("SVM cannot be trained with unlabeled data")
-
-    def fit_labeled(self, data: str):
-        dataset = LabeledDataset(data)
+    def fit(self, unlabeled_data: str, labeled_data: str):
+        dataset = LabeledDataset(labeled_data)
         x, y = dataset[0]
         self.class_map = {v: k for k, v in dataset.category_map.items()}
         self.clf = make_pipeline(StandardScaler(), SGDClassifier(max_iter=1000, tol=1e-3))

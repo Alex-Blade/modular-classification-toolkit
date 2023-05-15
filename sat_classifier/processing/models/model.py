@@ -8,12 +8,12 @@ import abc
 class Model(qcore.QgsProcessingAlgorithm):
     MODEL_MODE = "MODEL_MODE"
     MODE_ENUM = ["Fit", "Predict"]
-    INPUT_DATA_FOLDER = "INPUT_DATA_FOLDER"
-    INPUT_DATA_IS_LABELED = "INPUT_DATA_IS_LABELED"
+    LABELED_DATA_FOLDER = "LABELED_DATA"
+    UNLABELED_DATA_FOLDER = "UNLABELED_DATA"
     INPUT_MODEL_FILE = "INPUT_MODEL_FILE"
 
-    OUTPUT_MODEL_FILE = "OUTPUT_MODEL_FILE"
-    OUTPUT_DATA_FOLDER = "OUTPUT_DATA_FOLDER"
+    OUTPUT_MODEL_FILE = "MODEL_FILE"
+    OUTPUT_DATA_FOLDER = "PREDICTIONS_FOLDER"
 
     user_inputs = {False}
 
@@ -27,11 +27,7 @@ class Model(qcore.QgsProcessingAlgorithm):
         ...
 
     @abc.abstractmethod
-    def fit_labeled(self, data: str):
-        ...
-
-    @abc.abstractmethod
-    def fit_unlabeled(self, data: str):
+    def fit(self, unlabeled_data: str, labeled_data: str):
         ...
 
     @abc.abstractmethod
@@ -102,35 +98,19 @@ class Model(qcore.QgsProcessingAlgorithm):
 
         self.addParameter(
             qcore.QgsProcessingParameterString(
-                Model.INPUT_DATA_FOLDER,
-                described(Model.INPUT_DATA_FOLDER),
+                Model.LABELED_DATA_FOLDER,
+                described(Model.LABELED_DATA_FOLDER),
                 multiLine=False,
-                optional=False
-            )
-        )
-
-        self.addParameter(
-            qcore.QgsProcessingParameterBoolean(
-                Model.INPUT_DATA_IS_LABELED,
-                described(Model.INPUT_DATA_IS_LABELED),
                 optional=True
             )
         )
 
         self.addParameter(
-            qcore.QgsProcessingParameterFile(
-                Model.INPUT_MODEL_FILE,
-                described(Model.INPUT_MODEL_FILE),
+            qcore.QgsProcessingParameterString(
+                Model.UNLABELED_DATA_FOLDER,
+                described(Model.UNLABELED_DATA_FOLDER),
+                multiLine=False,
                 optional=True
-            )
-        )
-
-        self.addParameter(
-            qcore.QgsProcessingParameterFileDestination(
-                Model.OUTPUT_MODEL_FILE,
-                described(Model.OUTPUT_MODEL_FILE),
-                optional=True,
-                defaultValue="/tmp/model.gz"
             )
         )
 
@@ -139,28 +119,26 @@ class Model(qcore.QgsProcessingAlgorithm):
                 Model.OUTPUT_DATA_FOLDER,
                 described(Model.OUTPUT_DATA_FOLDER),
                 optional=True,
+                defaultValue=qcore.QgsProcessing.TEMPORARY_OUTPUT,
                 createByDefault=True
             )
         )
 
     def processAlgorithm(self, parameters, context, feedback):
-        fit = self.parameterAsEnum(parameters, Model.MODEL_MODE, context)
-        if fit == 0:
-            fld = self.parameterAsString(parameters, Model.INPUT_DATA_FOLDER, context)
-            output_file = self.parameterAsFile(parameters, Model.OUTPUT_MODEL_FILE, context)
-            labeled = self.parameterAsBoolean(parameters, Model.INPUT_DATA_IS_LABELED, context)
+        predict = self.parameterAsEnum(parameters, Model.MODEL_MODE, context)
+        if not predict:
+            unlabeled_fld = self.parameterAsString(parameters, Model.UNLABELED_DATA_FOLDER, context)
+            labeled_fld = self.parameterAsString(parameters, Model.LABELED_DATA_FOLDER, context)
+            output_file = "/tmp/model.gz"
 
-            if labeled:
-                self.fit_labeled(fld)
-            else:
-                self.fit_unlabeled(fld)
+            self.fit(unlabeled_fld, labeled_fld)
 
             self.save(output_file)
             return {Model.OUTPUT_MODEL_FILE: output_file}
         else:
-            input_data = self.parameterAsString(parameters, Model.INPUT_DATA_FOLDER, context)
+            input_data = self.parameterAsString(parameters, Model.UNLABELED_DATA_FOLDER, context)
             output_fld = self.parameterAsString(parameters, Model.OUTPUT_DATA_FOLDER, context)
-            model = self.parameterAsFile(parameters, Model.INPUT_MODEL_FILE, context)
+            model = "/tmp/model.gz"
 
             self.load(model)
             os.makedirs(output_fld, exist_ok=True)

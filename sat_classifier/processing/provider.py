@@ -3,9 +3,12 @@ import sys
 from pathlib import Path
 from typing import Type
 
+from .input_data import raster_loader
+from .models import model
+
 from qgis.core import QgsProcessingProvider
 from .renderer import Renderer
-from sat_classifier.processing.pipelines.full_pipeline import FullPipeline
+from .pipelines.full_pipeline import FullPipeline
 
 
 class Provider(QgsProcessingProvider):
@@ -32,7 +35,7 @@ class Provider(QgsProcessingProvider):
         for cls in Provider.load_folder("minimal.sat_classifier.processing.models", Provider.MODEL_FILES):
             self.addAlgorithm(cls())
         self.addAlgorithm(Renderer())
-        self.addAlgorithm(FullPipeline())
+        # self.addAlgorithm(FullPipeline())
 
     def id(self, *args, **kwargs):
         """The ID of your plugin, used for identifying the provider.

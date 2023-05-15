@@ -12,8 +12,10 @@ class Renderer(qcore.QgsProcessingAlgorithm):
     _help_string = ""
 
     INPUT_RASTER = "INPUT_RASTER"
-    PREDICTION_FILE = "PREDICTION_FILE"
+    PREDICTIONS_FOLDER = "PREDICTIONS_FOLDER"
     OUTPUT_RASTER = "OUTPUT_RASTER"
+
+    user_inputs = {}
 
     def tr(self, string) -> str:
         """
@@ -63,8 +65,8 @@ class Renderer(qcore.QgsProcessingAlgorithm):
 
         self.addParameter(
             qcore.QgsProcessingParameterString(
-                Renderer.PREDICTION_FILE,
-                described(Renderer.PREDICTION_FILE)
+                Renderer.PREDICTIONS_FOLDER,
+                described(Renderer.PREDICTIONS_FOLDER)
             )
         )
 
@@ -72,13 +74,14 @@ class Renderer(qcore.QgsProcessingAlgorithm):
             qcore.QgsProcessingParameterRasterDestination(
                 Renderer.OUTPUT_RASTER,
                 description=described(Renderer.OUTPUT_RASTER),
-                createByDefault=True,
+                defaultValue=qcore.QgsProcessing.TEMPORARY_OUTPUT,
+                createByDefault=True
             )
         )
 
     def processAlgorithm(self, parameters, context, feedback):
         raster_layer = self.parameterAsRasterLayer(parameters, Renderer.INPUT_RASTER, context)
-        predictions = self.parameterAsFile(parameters, Renderer.PREDICTION_FILE, context)
+        predictions = self.parameterAsString(parameters, Renderer.PREDICTIONS_FOLDER, context)
         output_raster = self.parameterAsOutputLayer(parameters, Renderer.OUTPUT_RASTER, context)
 
         if (p := Path(predictions)).is_dir():

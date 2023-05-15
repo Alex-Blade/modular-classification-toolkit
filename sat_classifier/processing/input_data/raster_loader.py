@@ -108,8 +108,9 @@ class RasterLoader(qcore.QgsProcessingAlgorithm):
 
         self.addParameter(
             qcore.QgsProcessingParameterFolderDestination(
-                RasterLoader.OUTPUT_FOLDER,
-                described(RasterLoader.OUTPUT_FOLDER)
+                self.OUTPUT_FOLDER,
+                described(self.OUTPUT_FOLDER),
+                defaultValue=qcore.QgsProcessing.TEMPORARY_OUTPUT
             )
         )
 
@@ -117,7 +118,7 @@ class RasterLoader(qcore.QgsProcessingAlgorithm):
 
     def processAlgorithm(self, parameters, context, feedback) -> dict:
         multi_file = not (self._config.get(RasterLoader.CONFIG_MULTI_FILE_MODE, "no") == "no")
-        folder = Path(self.parameterAsString(parameters, RasterLoader.OUTPUT_FOLDER, context))
+        folder = Path(self.parameterAsString(parameters, self.OUTPUT_FOLDER, context))
 
         for idx, batch in enumerate(self.convert_to_numpy(parameters, context, feedback, multi_file=multi_file)):
             out = folder / (f"b{idx}" if multi_file else f"b0")
@@ -130,5 +131,5 @@ class RasterLoader(qcore.QgsProcessingAlgorithm):
                 np.savez_compressed(p, *[b.arr for b in batch])
             else:
                 feedback.reportError(f"Unknown object: {batch[-1]}, type: {type(batch[-1])}")
-        feedback.pushDebugInfo(f"{RasterLoader.OUTPUT_FOLDER}: {folder}")
-        return {RasterLoader.OUTPUT_FOLDER: str(folder)}
+        feedback.pushDebugInfo(f"{self.OUTPUT_FOLDER}: {folder}")
+        return {self.OUTPUT_FOLDER: str(folder)}

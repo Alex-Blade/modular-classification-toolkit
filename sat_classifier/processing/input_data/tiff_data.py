@@ -14,7 +14,10 @@ __all__ = ["UnlabeledTiffLoader", "LabeledTiffLoader"]
 class UnlabeledTiffLoader(RasterLoader):
     INPUT_RASTER = "INPUT_RASTER"
     PROCESSED_BANDS = "PROCESSED_BANDS"
+    OUTPUT_FOLDER = "UNLABELED_DATA"
     _display_name = "Unlabeled Tiff Raster"
+
+    user_inputs = {INPUT_RASTER, PROCESSED_BANDS}
 
     def init_parameters_single_input(self):
         self.addParameter(
@@ -88,7 +91,10 @@ class LabeledTiffLoader(RasterLoader):
     LABELS_VECTOR = "LABELS_VECTOR"
     POLYGON_ID_FIELD = "POLYGON_ID_FIELD"
     POLYGON_CLASS_FIELD = "POLYGON_CLASS_FIELD"
+    OUTPUT_FOLDER = "LABELED_DATA"
     _display_name = "Labeled Tiff Loader"
+
+    user_inputs = {INPUT_RASTER, PROCESSED_BANDS, LABELS_VECTOR, POLYGON_ID_FIELD, POLYGON_CLASS_FIELD}
 
     def init_parameters_single_input(self):
         self.addParameter(
