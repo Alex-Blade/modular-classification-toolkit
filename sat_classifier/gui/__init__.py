@@ -8,7 +8,6 @@ from qgis import gui
 from qgis.core import QgsMessageLog, QgsProcessingProvider
 import qgis.core as core
 
-from . import simple_widget
 from .parameters_panel import ParametersPanel
 import processing
 from processing.tools.dataobjects import createContext
@@ -21,18 +20,6 @@ from processing.tools.dataobjects import createContext
 
 import faulthandler
 faulthandler.enable()
-
-
-class DockWidget(QtWidgets.QDockWidget, simple_widget.Ui_DockWidget):
-    closingPlugin = pyqtSignal()
-
-    def __init__(self, parent=None):
-        super(DockWidget, self).__init__(parent)
-        self.setupUi(self)
-
-    def closeEvent(self, event):
-        self.closingPlugin.emit()
-        event.accept()
 
 
 class PipelineElement:
