@@ -84,50 +84,48 @@ class QGisPlugin:
 
         panels = []
         if self.dock_widget is None:
-            self.dock_widget = gui.EmptyDockWidget()
-            from processing.tools.dataobjects import createContext
-            processing_context = createContext()
-            for alg in self.provider.algorithms():
-                parent = self.dock_widget.create_page(alg.displayName())
-                panel = ParametersPanel(alg, self.iface, parent, processing_context)
-                panel.initWidgets()
-                panels.append(panel)
-            QgsMessageLog.logMessage(f"{self.provider.algorithms()}")
+            self.dock_widget = gui.EmptyDockWidget(self.provider, self.iface)
+            # for alg in self.provider.algorithms():
+            #     parent = self.dock_widget.create_page(alg.displayName())
+            #     panel = ParametersPanel(alg, self.iface, parent, processing_context)
+            #     panel.initWidgets()
+            #     panels.append(panel)
+            # QgsMessageLog.logMessage(f"{self.provider.algorithms()}")
             self.dock_widget.finish()
 
         QgsMessageLog.logMessage(f"{[i.name() for i in self.provider.algorithms()]}")
 
-        def push_event():
-            import processing
-
-            params = dict()
-            for p in panels:
-                params.update(p.createProcessingParameters())
-                QgsMessageLog.logMessage(f"{params}")
-
-            QgsMessageLog.logMessage("Button Pressed")
-            feedback = core.QgsProcessingFeedback(logFeedback=True)
-            context = processing_context
-
-            QgsMessageLog.logMessage("Algo 1")
-            params.update(processing.run('yourplugin:unlabeledtiffloader', params, context=context,
-                                                   feedback=feedback, is_child_algorithm=True))
-            QgsMessageLog.logMessage("Algo 2")
-            params.update(processing.run('yourplugin:labeledtiffloader', params, context=context,
-                                                   feedback=feedback))
-            params["MODEL_MODE"] = 0
-            QgsMessageLog.logMessage("Algo 3")
-            params.update(processing.run('yourplugin:svm', params, context=context,
-                                         feedback=feedback))
-            params["MODEL_MODE"] = 1
-            QgsMessageLog.logMessage("Algo 4")
-            params.update(processing.run('yourplugin:svm', params, context=context,
-                                         feedback=feedback))
-            QgsMessageLog.logMessage("Algo 5")
-            outputs = processing.runAndLoadResults('yourplugin:renderer', params, context=context,
-                                                   feedback=feedback)
-            QgsMessageLog.logMessage(str(outputs))
-        self.dock_widget.pushButton.clicked[bool].connect(push_event)
+        # def push_event():
+        #     import processing
+        #
+        #     params = dict()
+        #     for p in panels:
+        #         params.update(p.createProcessingParameters())
+        #         QgsMessageLog.logMessage(f"{params}")
+        #
+        #     QgsMessageLog.logMessage("Button Pressed")
+        #     feedback = core.QgsProcessingFeedback(logFeedback=True)
+        #     context = processing_context
+        #
+        #     QgsMessageLog.logMessage("Algo 1")
+        #     params.update(processing.run('yourplugin:unlabeledtiffloader', params, context=context,
+        #                                            feedback=feedback, is_child_algorithm=True))
+        #     QgsMessageLog.logMessage("Algo 2")
+        #     params.update(processing.run('yourplugin:labeledtiffloader', params, context=context,
+        #                                            feedback=feedback))
+        #     params["MODEL_MODE"] = 0
+        #     QgsMessageLog.logMessage("Algo 3")
+        #     params.update(processing.run('yourplugin:svm', params, context=context,
+        #                                  feedback=feedback))
+        #     params["MODEL_MODE"] = 1
+        #     QgsMessageLog.logMessage("Algo 4")
+        #     params.update(processing.run('yourplugin:svm', params, context=context,
+        #                                  feedback=feedback))
+        #     QgsMessageLog.logMessage("Algo 5")
+        #     outputs = processing.runAndLoadResults('yourplugin:renderer', params, context=context,
+        #                                            feedback=feedback)
+        #     QgsMessageLog.logMessage(str(outputs))
+        # self.dock_widget.pushButton.clicked[bool].connect(push_event)
 
         self.dock_widget.closingPlugin.connect(self.onClosePlugin)
         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dock_widget)

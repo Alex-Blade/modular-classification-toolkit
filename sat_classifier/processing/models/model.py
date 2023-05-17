@@ -15,7 +15,7 @@ class Model(qcore.QgsProcessingAlgorithm):
     OUTPUT_MODEL_FILE = "MODEL_FILE"
     OUTPUT_DATA_FOLDER = "PREDICTIONS_FOLDER"
 
-    user_inputs = {False}
+    user_inputs = {MODEL_MODE}
 
     _group = "Models"
     _group_id = "models"

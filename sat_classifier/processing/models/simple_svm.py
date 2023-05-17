@@ -87,7 +87,9 @@ class SVM(Model):
         self.clf.fit(x, y)
 
     def save(self, file_name: str):
-        joblib.dump({"model": self.clf, "class_map": self.class_map}, file_name)
+        _ = joblib.dump({"model": self.clf, "class_map": self.class_map}, file_name)
+        import qgis.core
+        qgis.core.QgsMessageLog.logMessage(f"\nAAAA\n: {_}")
 
     def load(self, file_name: str):
         dct = joblib.load(file_name)
