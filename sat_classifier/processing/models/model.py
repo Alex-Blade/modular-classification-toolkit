@@ -2,29 +2,34 @@ import os
 
 import qgis.core as qcore
 from ..qgis_extensions import described
+from ..algorithm import Algorithm
 import abc
 
 
-class Model(qcore.QgsProcessingAlgorithm):
+class Model(Algorithm):
     MODEL_MODE = "MODEL_MODE"
     MODE_ENUM = ["Fit", "Predict"]
     LABELED_DATA_FOLDER = "LABELED_DATA"
     UNLABELED_DATA_FOLDER = "UNLABELED_DATA"
     INPUT_MODEL_FILE = "INPUT_MODEL_FILE"
 
-    OUTPUT_MODEL_FILE = "MODEL_FILE"
     OUTPUT_DATA_FOLDER = "PREDICTIONS_FOLDER"
 
-    user_inputs = {MODEL_MODE}
+    group_string = "Models"
+    group_id = "models"
 
-    _group = "Models"
-    _group_id = "models"
-    _help_string = ""
+    @property
+    def OUTPUT_MODEL_FILE(self):
+        return f"{self.__class__.__name__}_MODEL_FILE"
 
     @property
     @abc.abstractmethod
-    def _display_name(self) -> str:
+    def model_parameters(self) -> set[str] | set[bool]:
         ...
+
+    @property
+    def user_inputs(self) -> set[str] | set[bool]:
+        return {Model.MODEL_MODE} | self.model_parameters
 
     @abc.abstractmethod
     def fit(self, unlabeled_data: str, labeled_data: str):
@@ -42,6 +47,9 @@ class Model(qcore.QgsProcessingAlgorithm):
     def predict(self, data: str, output_folder: str):
         ...
 
+    def add_custom_parameters(self):
+        ...
+
     def tr(self, string) -> str:
         """
         Translation boilerplate
@@ -49,43 +57,9 @@ class Model(qcore.QgsProcessingAlgorithm):
         import sklearn.svm as sss
         return string
 
-    def createInstance(self):
-        """
-        Initialize the algorithm
-        """
-        return self.__class__()
-
-    def name(self) -> str:
-        """
-        Unique algorithm identifier
-        """
-        return self.__class__.__name__.lower()
-
-    def displayName(self) -> str:
-        """
-        Name in GUI
-        """
-        return self._display_name
-
-    def group(self) -> str:
-        """
-        Group name in GUI
-        """
-        return self._group
-
-    def shortHelpString(self) -> str:
-        """
-        Basic description
-        """
-        return self._help_string
-
-    def groupId(self) -> str:
-        """
-        Group in GUI
-        """
-        return self._group_id
-
     def initAlgorithm(self, config=None):
+        self.add_custom_parameters()
+
         self.addParameter(
             qcore.QgsProcessingParameterEnum(
                 Model.MODEL_MODE,
@@ -124,21 +98,32 @@ class Model(qcore.QgsProcessingAlgorithm):
             )
         )
 
-    def processAlgorithm(self, parameters, context, feedback):
+        self.addParameter(
+            qcore.QgsProcessingParameterFileDestination(
+                self.OUTPUT_MODEL_FILE,
+                description=described(self.OUTPUT_MODEL_FILE),
+                optional=True,
+                defaultValue=qcore.QgsProcessing.TEMPORARY_OUTPUT,
+                createByDefault=False,
+                fileFilter="(*.gz)"
+            )
+        )
+
+    def processAlgorithm(self, parameters, context, feedback: qcore.QgsProcessingFeedback):
         predict = self.parameterAsEnum(parameters, Model.MODEL_MODE, context)
         if not predict:
             unlabeled_fld = self.parameterAsString(parameters, Model.UNLABELED_DATA_FOLDER, context)
             labeled_fld = self.parameterAsString(parameters, Model.LABELED_DATA_FOLDER, context)
-            output_file = "/tmp/model.gz"
+            output_file = self.parameterAsFile(parameters, self.OUTPUT_MODEL_FILE, context)
 
             self.fit(unlabeled_fld, labeled_fld)
 
             self.save(output_file)
-            return {Model.OUTPUT_MODEL_FILE: output_file}
+            return {self.OUTPUT_MODEL_FILE: output_file}
         else:
             input_data = self.parameterAsString(parameters, Model.UNLABELED_DATA_FOLDER, context)
             output_fld = self.parameterAsString(parameters, Model.OUTPUT_DATA_FOLDER, context)
-            model = "/tmp/model.gz"
+            model = self.parameterAsFile(parameters, self.OUTPUT_MODEL_FILE, context)
 
             self.load(model)
             os.makedirs(output_fld, exist_ok=True)

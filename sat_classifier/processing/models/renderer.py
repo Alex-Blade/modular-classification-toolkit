@@ -1,15 +1,21 @@
 from pathlib import Path
 
 import qgis.core as qcore
-from .qgis_extensions import described
+from minimal.sat_classifier.processing.qgis_extensions import described
+from ..algorithm import Algorithm
 import numpy as np
 from osgeo import gdal
 
 
-class Renderer(qcore.QgsProcessingAlgorithm):
-    _display_name = "Predict Renderer"
-    _group = "Renderers"
-    _help_string = ""
+__all__ = ["Renderer"]
+
+
+class Renderer(Algorithm):
+    name_string = "renderer"
+    display_name = "Predict Renderer"
+    group_string = "Renderers"
+    group_id = "renders"
+    help_string = ""
 
     INPUT_RASTER = "INPUT_RASTER"
     PREDICTIONS_FOLDER = "PREDICTIONS_FOLDER"
@@ -23,36 +29,6 @@ class Renderer(qcore.QgsProcessingAlgorithm):
         """
         import sklearn.svm as sss
         return string
-
-    def createInstance(self):
-        """
-        Initialize the algorithm
-        """
-        return self.__class__()
-
-    def name(self) -> str:
-        """
-        Unique algorithm identifier
-        """
-        return self.__class__.__name__.lower()
-
-    def displayName(self) -> str:
-        """
-        Name in GUI
-        """
-        return self._display_name
-
-    def group(self) -> str:
-        """
-        Group in GUI
-        """
-        return self._group
-
-    def shortHelpString(self) -> str:
-        """
-        Basic description
-        """
-        return self._help_string
 
     def initAlgorithm(self, config=None):
         self.addParameter(

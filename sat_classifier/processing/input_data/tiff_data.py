@@ -158,8 +158,8 @@ class LabeledTiffLoader(RasterLoader):
             bands = []
 
         vector_layer: qcore.QgsVectorLayer = self.parameterAsVectorLayer(parameters,
-                                                                             LabeledTiffLoader.LABELS_VECTOR,
-                                                                             context)
+                                                                         LabeledTiffLoader.LABELS_VECTOR,
+                                                                         context)
         id_field = self.parameterAsString(parameters, LabeledTiffLoader.POLYGON_ID_FIELD, context)
         class_field = self.parameterAsString(parameters, LabeledTiffLoader.POLYGON_CLASS_FIELD, context)
 
@@ -182,12 +182,9 @@ class LabeledTiffLoader(RasterLoader):
                                           'CROP_TO_CUTLINE': True,
                                           'KEEP_RESOLUTION': False, 'SET_RESOLUTION': False, 'X_RESOLUTION': None,
                                           'Y_RESOLUTION': None, 'MULTITHREADING': False, 'OPTIONS': '', 'DATA_TYPE': 0,
-                                          'EXTRA': f'-cwhere "Id=\'{_id}\'" {bands_opts}', 'OUTPUT': 'TEMPORARY_OUTPUT'})
+                                          'EXTRA': f'-cwhere "{id_field}=\'{_id}\'" {bands_opts}', 'OUTPUT': 'TEMPORARY_OUTPUT'})
                     feedback.pushInfo(f"{res}")
                     with rio.open(res["OUTPUT"]) as dataset:
-                        if bands:
-                            result: ListOfBands = [Band(dataset.read(b)) for b in bands]
-                        else:
-                            result: ListOfBands = [Band(dataset.read(b)) for b in dataset.indexes]
+                        result: ListOfBands = [Band(dataset.read(b)) for b in dataset.indexes]
                     result.append(Label(_id, _class))
                     yield result

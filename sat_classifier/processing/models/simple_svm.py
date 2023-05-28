@@ -6,13 +6,15 @@ from torch.utils.data import Dataset
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDClassifier
+from sklearn.ensemble import IsolationForest
+from sklearn.svm import OneClassSVM
 import joblib
 from pathlib import Path
 
-from .model import Model
+from ..models.model import Model
 
 
-__all__ = ["SVM"]
+__all__ = ["SVM", "SingleClassSVM", "IsolationF"]
 
 
 class LabeledDataset(Dataset):
@@ -71,7 +73,9 @@ class UnlabeledDataset(Dataset):
 
 
 class SVM(Model):
-    _display_name = "SVM"
+    display_name = "SVM"
+    name_string = "svm"
+    model_parameters = set()
 
     def __init__(self):
         super().__init__()
@@ -88,8 +92,84 @@ class SVM(Model):
 
     def save(self, file_name: str):
         _ = joblib.dump({"model": self.clf, "class_map": self.class_map}, file_name)
-        import qgis.core
-        qgis.core.QgsMessageLog.logMessage(f"\nAAAA\n: {_}")
+
+    def load(self, file_name: str):
+        dct = joblib.load(file_name)
+        self.clf = dct["model"]
+        self.class_map = dct["class_map"]
+
+    def predict(self, data: str, output_folder: str):
+        dataset = UnlabeledDataset(data)
+        for i in range(len(dataset)):
+            x, file = dataset[i][0]
+            file = Path(output_folder, ("pred_" + file.name))
+            res = self.clf.predict(x)
+            res = np.array([self.class_map[i] for i in res])
+            # sort_idx = np.argsort(transdict.keys())
+            # idx = np.searchsorted(transdict.keys(), abc_array, sorter=sort_idx)
+            # out = np.asarray(transdict.values())[sort_idx][idx]
+            np.savez_compressed(file, res)
+
+
+class SingleClassSVM(Model):
+    display_name = "Single Class SVM"
+    name_string = "singleclasssvm"
+    model_parameters = set()
+
+    def __init__(self):
+        super().__init__()
+        self.clf = None
+        self.dataset = None
+        self.class_map = {}
+
+    def fit(self, unlabeled_data: str, labeled_data: str):
+        dataset = LabeledDataset(labeled_data)
+        x, y = dataset[0]
+        self.class_map = {1: 2, -1: 1}
+        self.clf = OneClassSVM(max_iter=1000)
+        self.clf.fit(x, y)
+
+    def save(self, file_name: str):
+        _ = joblib.dump({"model": self.clf, "class_map": self.class_map}, file_name)
+
+    def load(self, file_name: str):
+        dct = joblib.load(file_name)
+        self.clf = dct["model"]
+        self.class_map = dct["class_map"]
+
+    def predict(self, data: str, output_folder: str):
+        dataset = UnlabeledDataset(data)
+        for i in range(len(dataset)):
+            x, file = dataset[i][0]
+            file = Path(output_folder, ("pred_" + file.name))
+            res = self.clf.predict(x)
+            res = np.array([self.class_map[i] for i in res])
+            # sort_idx = np.argsort(transdict.keys())
+            # idx = np.searchsorted(transdict.keys(), abc_array, sorter=sort_idx)
+            # out = np.asarray(transdict.values())[sort_idx][idx]
+            np.savez_compressed(file, res)
+
+
+class IsolationF(Model):
+    display_name = "Isolation Forest"
+    name_string = "isoforest"
+    model_parameters = set()
+
+    def __init__(self):
+        super().__init__()
+        self.clf = None
+        self.dataset = None
+        self.class_map = {}
+
+    def fit(self, unlabeled_data: str, labeled_data: str):
+        dataset = LabeledDataset(labeled_data)
+        x, y = dataset[0]
+        self.class_map = {1: 2, -1: 1}
+        self.clf = IsolationForest()
+        self.clf.fit(x, y)
+
+    def save(self, file_name: str):
+        _ = joblib.dump({"model": self.clf, "class_map": self.class_map}, file_name)
 
     def load(self, file_name: str):
         dct = joblib.load(file_name)

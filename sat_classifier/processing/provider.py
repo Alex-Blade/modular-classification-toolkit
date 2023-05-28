@@ -3,12 +3,7 @@ import sys
 from pathlib import Path
 from typing import Type
 
-from .input_data import raster_loader
-from .models import model
-
 from qgis.core import QgsProcessingProvider
-from .renderer import Renderer
-from .pipelines.full_pipeline import FullPipeline
 
 
 class Provider(QgsProcessingProvider):
@@ -16,8 +11,8 @@ class Provider(QgsProcessingProvider):
     MODEL_FILES = {"__init__.py", "model.py"}
 
     @staticmethod
-    def load_folder(package, predefined_files):
-        files = Path(sys.modules[package].__file__).parent.iterdir()
+    def load_folder(folder, predefined_files, package="minimal"):
+        files = Path(folder).iterdir()
         files = list(filter(lambda f: f.is_file() and f.name not in predefined_files, files))
         for file in files:
             module = f"{package}.{file.name.replace('.', '_')}"
@@ -29,13 +24,18 @@ class Provider(QgsProcessingProvider):
                 cls: Type = getattr(foo, str(cls_name))
                 yield cls
 
+    @staticmethod
+    def load_from_package(package, predefined_files):
+        folder = Path(sys.modules[package].__file__).parent
+        yield from Provider.load_folder(folder, predefined_files, package=package)
+
     def loadAlgorithms(self, *args, **kwargs):
-        for cls in Provider.load_folder("minimal.sat_classifier.processing.input_data", Provider.INPUT_DATA_FILES):
+        import minimal.sat_classifier.processing.input_data
+        import minimal.sat_classifier.processing.models
+        for cls in Provider.load_from_package("minimal.sat_classifier.processing.input_data", Provider.INPUT_DATA_FILES):
             self.addAlgorithm(cls())
-        for cls in Provider.load_folder("minimal.sat_classifier.processing.models", Provider.MODEL_FILES):
+        for cls in Provider.load_from_package("minimal.sat_classifier.processing.models", Provider.MODEL_FILES):
             self.addAlgorithm(cls())
-        self.addAlgorithm(Renderer())
-        # self.addAlgorithm(FullPipeline())
 
     def id(self, *args, **kwargs):
         """The ID of your plugin, used for identifying the provider.

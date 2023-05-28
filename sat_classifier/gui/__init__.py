@@ -3,7 +3,8 @@ from functools import partial
 
 from PyQt5 import QtGui, QtWidgets, QtCore, Qt
 from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
+from PyQt5.QtWidgets import QToolBox
 from qgis import gui
 from qgis.core import QgsMessageLog, QgsProcessingProvider
 import qgis.core as core
@@ -17,13 +18,20 @@ from processing.tools.dataobjects import createContext
 #
 # pydevd_pycharm.settrace('127.0.0.1', port=12345, stdoutToServer=True, stderrToServer=True)
 #
+#
+# import faulthandler
+# faulthandler.enable()
 
-import faulthandler
-faulthandler.enable()
+
+REMOVE_PIXMAP = QPixmap("/home/user/code/minimal/x-square-svgrepo-com.svg")
+REMOVE_ICON = QIcon(REMOVE_PIXMAP)
+
+ADD_PIXMAP = QPixmap("/home/user/code/minimal/add-square-svgrepo-com.svg")
+ADD_ICON = QIcon(ADD_PIXMAP)
 
 
 class PipelineElement:
-    def __init__(self, parent: QtWidgets.QWidget, page_parent: QtWidgets.QWidget, provider: QgsProcessingProvider):
+    def __init__(self, parent: QtWidgets.QWidget, page_parent: QToolBox, provider: QgsProcessingProvider):
         self.parent = parent
         self.config_title = QtWidgets.QLabel(parent)
         self.config_hlayout = QtWidgets.QHBoxLayout()
@@ -34,26 +42,29 @@ class PipelineElement:
         self.parameters_page = QtWidgets.QWidget(page_parent)
         self.parameters_page.setGeometry(QtCore.QRect(0, 0, 411, 68))
         self.parameters_page.setObjectName("parameters_page")
-        self.page_vertical_layout = QtWidgets.QVBoxLayout(self.parameters_page)  # QtWidgets.QVBoxLayout()
+        self.page_vertical_layout = QtWidgets.QVBoxLayout(self.parameters_page)
         self.page_vertical_layout.setObjectName("page_vertical_layout")
-        # self.parameters_page.setLayout(self.page_vertical_layout)
         self.provider = provider
         self.parameter_panel: ParametersPanel = None
+        self.toolbox = page_parent
 
     @property
     def algorithm(self):
-        return self.provider.algorithm(self.config_combobox.currentText())
+        return self.provider.algorithm(self.config_combobox.currentData()["name"])
 
     def initialize(self, remove_slot, iface, processing_context):
         self.config_hlayout.setSizeConstraint(QtWidgets.QLayout.SetDefaultConstraint)
-        self.config_combobox.addItems([alg.name() for alg in self.provider.algorithms()])
+        for alg in self.provider.algorithms():
+            self.config_combobox.addItem(alg.displayName(), {"name": alg.name()})
+        # self.config_combobox.addItems([alg.name() for alg in self.provider.algorithms()])
         self.config_hlayout.addWidget(self.config_combobox)
         sizePolicy = QtWidgets.QSizePolicy(QtWidgets.QSizePolicy.Maximum, QtWidgets.QSizePolicy.Fixed)
         sizePolicy.setHorizontalStretch(0)
         sizePolicy.setVerticalStretch(0)
         sizePolicy.setHeightForWidth(self.remove.sizePolicy().hasHeightForWidth())
         self.remove.setSizePolicy(sizePolicy)
-        self.remove.setText("-")
+        self.remove.setIcon(REMOVE_ICON)
+        self.remove.setFlat(True)
         remove_slot = partial(remove_slot, self)
         self.remove.clicked[bool].connect(remove_slot)
         self.config_hlayout.addWidget(self.remove)
@@ -85,6 +96,8 @@ class PipelineElement:
         self.parameter_panel.initWidgets()
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.page_vertical_layout.addItem(spacer_item)
+        idx = self.toolbox.indexOf(self.parameters_page)
+        self.toolbox.setItemText(idx, algo.displayName())
 
     def remove_children(self):
         self.config_title.setParent(None)
@@ -182,14 +195,13 @@ class EmptyDockWidget(QtWidgets.QDockWidget):
         self.pipeline.pop(index)
 
     def add_pipeline_element(self):
-        pel = PipelineElement(self.scrollAreaWidgetContents, self.predict, self.provider)
+        pel = PipelineElement(self.scrollAreaWidgetContents, self.toolBox, self.provider)
         pel.initialize(self.remove_pipeline_element, self.iface, self.processing_context)
         i = self.verticalLayout_2.itemAt(self.verticalLayout_2.count() - 1)
         QgsMessageLog.logMessage(f"Object: {i.__class__.__name__}")
         pel.add_to_layout(self.verticalLayout_2)
         self.pipeline.append(pel)
-        pel.parameters_page.setObjectName("Test")
-        self.toolBox.addItem(pel.parameters_page, "Placeholder 2")
+        self.toolBox.addItem(pel.parameters_page, pel.algorithm.displayName())
 
     def finish(self):
         self.translate_ui()
@@ -204,7 +216,8 @@ class EmptyDockWidget(QtWidgets.QDockWidget):
         self.setWindowTitle(_translate("DockWidget", "DockWidget"))
         self.pushButton.setText(_translate("DockWidget", "Classify"))
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.predict), _translate("DockWidget", "Classify"))
-        self.add_to_pipe.setText(_translate("DockWidget", "+"))
+        self.add_to_pipe.setIcon(ADD_ICON)
+        self.add_to_pipe.setFlat(True)
         self.tabWidget.setTabText(self.tabWidget.indexOf(self.config), _translate("DockWidget", "Configuration"))
 
     def push_button(self):
@@ -212,15 +225,17 @@ class EmptyDockWidget(QtWidgets.QDockWidget):
         params = dict()
         feedback = core.QgsProcessingFeedback(logFeedback=True)
         context = self.processing_context
+        intermediate_result = {}
         for idx, pel in enumerate(self.pipeline):
             panel = pel.parameter_panel
             params.update(panel.createProcessingParameters())
+            params.update(intermediate_result)
             func = processing.run
             kwargs = {"context": context, "feedback": feedback, "is_child_algorithm": True}
             if idx == len(self.pipeline) - 1:
                 func = processing.runAndLoadResults
                 kwargs.pop("is_child_algorithm")
-            params.update(func(f'yourplugin:{pel.config_combobox.currentText()}', params, **kwargs))
+            intermediate_result = func(f'yourplugin:{pel.config_combobox.currentData()["name"]}', params, **kwargs)
 
     def closeEvent(self, event):
         self.closingPlugin.emit()
