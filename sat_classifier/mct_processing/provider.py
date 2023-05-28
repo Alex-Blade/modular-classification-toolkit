@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from typing import Type
 
-from qgis.core import QgsProcessingProvider
+from qgis.core import QgsProcessingProvider, Qgis, QgsMessageLog
 
 
 class Provider(QgsProcessingProvider):
@@ -36,6 +36,16 @@ class Provider(QgsProcessingProvider):
             self.addAlgorithm(cls())
         for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.models", Provider.MODEL_FILES):
             self.addAlgorithm(cls())
+        custom_packages = Path.home() / "qgis_mct"
+        if custom_packages.is_dir():
+            for d in custom_packages.iterdir():
+                if d.is_dir():
+                    QgsMessageLog.logMessage(f"Loading {d} extension")
+                    try:
+                        for cls in Provider.load_folder(d, predefined_files=set()):
+                            self.addAlgorithm(cls())
+                    except Exception as e:
+                        QgsMessageLog.logMessage(f"Failed to load {d}:\n{e}")
 
     def id(self, *args, **kwargs):
         """The ID of your plugin, used for identifying the provider.
