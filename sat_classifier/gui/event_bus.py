@@ -11,6 +11,13 @@ class SubmitExecutionEvent:
 
 
 @dataclass
+class ExecutionProgressEvent:
+    step: int
+    out_of: int
+    event_type = "ExecutionProgress"
+
+
+@dataclass
 class AlgorithmAddedEvent:
     pipeline_element_id: str
     event_type = "AlgorithmAddedEvent"

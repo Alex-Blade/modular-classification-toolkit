@@ -4,8 +4,7 @@ from PyQt5.QtWidgets import QWidget
 import qgis.core as qcore
 
 from .parameters_panel import ParametersPanel
-from .event_bus import EventBus, AlgorithmSelectedEvent, AlgorithmRemovedEvent, AlgorithmAddedEvent, SubmitExecutionEvent
-from .tab import Tab
+from .event_bus import EventBus, AlgorithmSelectedEvent, AlgorithmRemovedEvent, AlgorithmAddedEvent, SubmitExecutionEvent, ExecutionProgressEvent
 
 
 class AlgorithmConfiguration:
@@ -62,6 +61,10 @@ class PipelineExecution:
         self.toolbox_layout.addWidget(self.toolbox)
         spacer_item = QtWidgets.QSpacerItem(20, 40, QtWidgets.QSizePolicy.Minimum, QtWidgets.QSizePolicy.Expanding)
         self.toolbox_layout.addItem(spacer_item)
+        self.progress_bar = QtWidgets.QProgressBar(self.execution_page)
+        self.progress_bar.setValue(0)
+        self.progress_bar.setObjectName("progress_bar")
+        self.toolbox_layout.addWidget(self.progress_bar)
         self.classify_button = QtWidgets.QPushButton(self.execution_page)
         self.classify_button.setObjectName("classify_button")
         self.classify_button.setText("Classify")
@@ -72,6 +75,11 @@ class PipelineExecution:
         event_bus.subscribe(AlgorithmAddedEvent.event_type, self.on_algorithm_added)
         event_bus.subscribe(AlgorithmSelectedEvent.event_type, self.on_algorithm_selected)
         event_bus.subscribe(AlgorithmRemovedEvent.event_type, self.on_algorithm_removed)
+        event_bus.subscribe(ExecutionProgressEvent.event_type, self.on_execution_progress)
+
+    def on_execution_progress(self, data: ExecutionProgressEvent):
+        progress = int((data.step / data.out_of) * 100)
+        self.progress_bar.setValue(progress)
 
     def on_algorithm_selected(self, data: AlgorithmSelectedEvent):
         conf = self.configurations[data.pipeline_element_id]

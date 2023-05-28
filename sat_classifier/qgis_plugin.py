@@ -17,7 +17,7 @@ class QGisPlugin:
         self.action: QAction = None
         self.event_bus: EventBus = EventBus()
         self.dock_widget: MainDock = None
-        self.pipeline_executor: PipelineExecutor = DefaultPipelineExecutor()
+        self.pipeline_executor: PipelineExecutor = DefaultPipelineExecutor(self.event_bus)
         self.event_bus.subscribe(SubmitExecutionEvent.event_type, self.pipeline_executor.on_execution_submit)
 
     def init_processing(self):
