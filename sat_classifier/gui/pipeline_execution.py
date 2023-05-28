@@ -4,7 +4,7 @@ from PyQt5.QtWidgets import QWidget
 import qgis.core as qcore
 
 from .parameters_panel import ParametersPanel
-from .event_bus import EventBus, AlgorithmSelectedEvent, AlgorithmRemovedEvent, AlgorithmAddedEvent, SubmitExecutionEvent, UpdateConfigurationPageRequest
+from .event_bus import EventBus, AlgorithmSelectedEvent, AlgorithmRemovedEvent, AlgorithmAddedEvent, SubmitExecutionEvent
 from .tab import Tab
 
 

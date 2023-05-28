@@ -29,13 +29,6 @@ class AlgorithmSelectedEvent:
     event_type = "AlgorithmSelectedEvent"
 
 
-@dataclass
-class UpdateConfigurationPageRequest:
-    pipeline_element_id: str
-    algo: QgsProcessingAlgorithm
-    event_type = "UpdateConfigurationPageRequest"
-
-
 class EventBus:
     def __init__(self):
         self.subscribers = {}
