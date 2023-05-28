@@ -7,6 +7,7 @@ from processing.tools.dataobjects import createContext
 from .event_bus import EventBus
 from .pipeline_configuration import PipelineConfiguration
 from .pipeline_execution import PipelineExecution
+from .tab import Tab
 
 
 class MainDock(QtWidgets.QDockWidget):
@@ -29,10 +30,10 @@ class MainDock(QtWidgets.QDockWidget):
         self.tab_widget = QtWidgets.QTabWidget(self.dock_widget_contents)
         self.tab_widget.setObjectName("tab_widget")
 
-        self.configuration_page = PipelineConfiguration(self.dock_widget_contents, self.provider, self.event_bus)
+        self.configuration_page: Tab = PipelineConfiguration(self.dock_widget_contents, self.provider, self.event_bus)
         self.tab_widget.addTab(self.configuration_page.tab_to_add, "Configuration")
 
-        self.execution_page = PipelineExecution(self.dock_widget_contents, self.iface, self.processing_context, self.event_bus)
+        self.execution_page: Tab = PipelineExecution(self.dock_widget_contents, self.iface, self.processing_context, self.event_bus)
         self.tab_widget.addTab(self.execution_page.tab_to_add, "Execution")
 
         self.horizontal_layout.addWidget(self.tab_widget)

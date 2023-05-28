@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import qgis.core as qcore
-from minimal.sat_classifier.processing.qgis_extensions import described
+from minimal.sat_classifier.mct_processing.qgis_extensions import described
 from ..algorithm import Algorithm
 import numpy as np
 from osgeo import gdal

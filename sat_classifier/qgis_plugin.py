@@ -3,7 +3,8 @@ from PyQt5.QtWidgets import QAction, QMessageBox
 from qgis.core import QgsApplication, QgsMessageLog
 import qgis.core as core
 
-from .processing.provider import Provider
+from .mct_processing.provider import Provider
+from .mct_processing.pipeline_executor import PipelineExecutor, DefaultPipelineExecutor
 from .gui.main_dock import MainDock
 from .gui.event_bus import EventBus, SubmitExecutionEvent
 import processing
@@ -12,30 +13,34 @@ import processing
 class QGisPlugin:
     def __init__(self, iface):
         self.iface = iface
-        self.provider = None
-        self.action = None
-        self.event_bus = EventBus()
-        self.dock_widget = None
-        self.event_bus.subscribe(SubmitExecutionEvent.event_type, QGisPlugin.on_execution_submit)
+        self.provider: core.QgsProcessingProvider = None
+        self.action: QAction = None
+        self.event_bus: EventBus = EventBus()
+        self.dock_widget: MainDock = None
+        self.pipeline_executor: PipelineExecutor = DefaultPipelineExecutor()
+        self.event_bus.subscribe(SubmitExecutionEvent.event_type, self.pipeline_executor.on_execution_submit)
 
     def init_processing(self):
         """
         Initialize and register processing providers
         :return:
         """
-        self.provider = Provider()
-        QgsApplication.processingRegistry().addProvider(self.provider)
+        if not self.provider:
+            self.provider = Provider()
+            QgsApplication.processingRegistry().addProvider(self.provider)
 
     def onClosePlugin(self):
         """Cleanup necessary items here when plugin dockwidget is closed"""
+        self.event_bus.reset_bus()
         self.dock_widget.closingPlugin.disconnect(self.onClosePlugin)
+        self.dock_widget.setParent(None)
 
     def initGui(self):
         """
         Initialize GUI elements
         :return:
         """
-        self.action = QAction('Go!', self.iface.mainWindow())
+        self.action = QAction('Start MCT', self.iface.mainWindow())
         self.action.triggered.connect(self.run)
         self.iface.addToolBarIcon(self.action)
         self.init_processing()
@@ -46,35 +51,21 @@ class QGisPlugin:
         :return:
         """
         self.iface.removeToolBarIcon(self.action)
-        QgsApplication.processingRegistry().removeProvider(self.provider)
         if self.dock_widget is not None:
             self.dock_widget.close()
-        del self.action
-        del self.provider
+            self.dock_widget = None
 
-    @staticmethod
-    def on_execution_submit(data: SubmitExecutionEvent):
-        QgsMessageLog.logMessage("message")
-        params = dict()
-        feedback = core.QgsProcessingFeedback(logFeedback=True)
-        context = data.panels[0].processing_context
-        intermediate_result = {}
-        for idx, panel in enumerate(data.panels):
-            params.update(panel.createProcessingParameters())
-            params.update(intermediate_result)
-            func = processing.run
-            kwargs = {"context": context, "feedback": feedback, "is_child_algorithm": True}
-            if idx == len(data.panels) - 1:
-                func = processing.runAndLoadResults
-                kwargs.pop("is_child_algorithm")
-            intermediate_result = func(f'yourplugin:{panel.algorithm().name()}', params, **kwargs)
+        if self.action is not None:
+            self.action.setParent(None)
+            self.action = None
+
+        if self.provider is not None:
+            QgsApplication.processingRegistry().removeProvider(self.provider)
+            self.provider = None
 
     def run(self):
-        QMessageBox.information(None, 'Minimal plugin', 'Do something useful here')
-        if self.dock_widget is None:
+        if self.dock_widget is None or self.dock_widget.parent() is None:
             self.dock_widget = MainDock(self.iface, self.provider, self.event_bus)
-
-        QgsMessageLog.logMessage(f"{[i.name() for i in self.provider.algorithms()]}")
 
         self.dock_widget.closingPlugin.connect(self.onClosePlugin)
         self.iface.addDockWidget(Qt.LeftDockWidgetArea, self.dock_widget)

@@ -46,3 +46,6 @@ class EventBus:
         if event_type in self.subscribers:
             for callback in self.subscribers[event_type]:
                 callback(data)
+
+    def reset_bus(self):
+        self.subscribers = {}

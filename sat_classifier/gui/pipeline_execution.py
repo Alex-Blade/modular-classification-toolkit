@@ -28,7 +28,6 @@ class AlgorithmConfiguration:
         self.page_vertical_layout.addItem(spacer_item)
 
     def clean_page(self):
-        children = self.page_vertical_layout.children()
         for i in reversed(range(self.page_vertical_layout.count())):
             item = self.page_vertical_layout.itemAt(i)
             self.page_vertical_layout.removeItem(item)
@@ -44,7 +43,7 @@ class AlgorithmConfiguration:
         del self.parameter_panel
 
 
-class PipelineExecution(Tab):
+class PipelineExecution:
     def __init__(self, parent: QtWidgets.QWidget, iface, processing_context: qcore.QgsProcessingContext, event_bus: EventBus):
         self.parent = parent
         self.iface = iface

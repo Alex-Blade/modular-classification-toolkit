@@ -1,10 +1,9 @@
-import abc
+from typing import Protocol
 
 from PyQt5.QtWidgets import QWidget
 
 
-class Tab(abc.ABC):
+class Tab(Protocol):
     @property
-    @abc.abstractmethod
     def tab_to_add(self) -> QWidget:
         ...

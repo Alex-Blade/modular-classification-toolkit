@@ -30,11 +30,11 @@ class Provider(QgsProcessingProvider):
         yield from Provider.load_folder(folder, predefined_files, package=package)
 
     def loadAlgorithms(self, *args, **kwargs):
-        import minimal.sat_classifier.processing.input_data
-        import minimal.sat_classifier.processing.models
-        for cls in Provider.load_from_package("minimal.sat_classifier.processing.input_data", Provider.INPUT_DATA_FILES):
+        import minimal.sat_classifier.mct_processing.input_data
+        import minimal.sat_classifier.mct_processing.models
+        for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.input_data", Provider.INPUT_DATA_FILES):
             self.addAlgorithm(cls())
-        for cls in Provider.load_from_package("minimal.sat_classifier.processing.models", Provider.MODEL_FILES):
+        for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.models", Provider.MODEL_FILES):
             self.addAlgorithm(cls())
 
     def id(self, *args, **kwargs):

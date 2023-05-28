@@ -15,7 +15,7 @@ class UnlabeledTiffLoader(RasterLoader):
     INPUT_RASTER = "INPUT_RASTER"
     PROCESSED_BANDS = "PROCESSED_BANDS"
     OUTPUT_FOLDER = "UNLABELED_DATA"
-    _display_name = "Unlabeled Tiff Raster"
+    _display_name = "Unlabeled Tiff Loader"
 
     user_inputs = {INPUT_RASTER, PROCESSED_BANDS}
 

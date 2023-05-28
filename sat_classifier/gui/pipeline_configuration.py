@@ -68,7 +68,6 @@ class PipelineElement:
         layout.insertWidget(idx, self.title)
 
     def on_algo_selected(self):
-        QgsMessageLog.logMessage(f"on algo selected: {self.algorithm.name()}")
         algo = self.algorithm
         self.title.setText(algo.group())
         self.event_bus.publish(AlgorithmSelectedEvent.event_type, AlgorithmSelectedEvent(self.pipeline_element_id, algo))
@@ -88,7 +87,7 @@ class PipelineElement:
         del self.remove
 
 
-class PipelineConfiguration(Tab):
+class PipelineConfiguration:
     def __init__(self, parent, provider: QgsProcessingProvider, event_bus: EventBus):
         self.parent = parent
         self.provider = provider

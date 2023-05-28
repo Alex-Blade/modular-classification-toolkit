@@ -41,13 +41,11 @@ class ParametersPanel(QgsProcessingParametersGenerator):
 
         for param in self.algorithm().parameterDefinitions():
             if param.flags() & QgsProcessingParameterDefinition.FlagHidden:
-                QgsMessageLog.logMessage(f"Passing {param.name()}")
                 continue
             if not param.isDestination():
                 try:
                     wrapper = self.wrappers[param.name()]
                 except KeyError:
-                    QgsMessageLog.logMessage(f"KeyError {param.name()}")
                     continue
 
                 # For compatibility with 3.x API, we need to check whether the wrapper is
@@ -99,7 +97,6 @@ class ParametersPanel(QgsProcessingParametersGenerator):
 
     def initWidgets(self):
         user_inputs = getattr(self.algorithm(), "user_inputs", {True})
-        QgsMessageLog.logMessage(f"{user_inputs}")
         for p in self.algorithm().parameterDefinitions():
             if True not in user_inputs and p.name() not in user_inputs:
                 continue
@@ -131,7 +128,6 @@ class ParametersPanel(QgsProcessingParametersGenerator):
             # self.parent.addWidget(widget)
 
         for wrapper in list(self.wrappers.values()):
-            QgsMessageLog.logMessage(f"{wrapper}")
             wrapper.postInitialize(list(self.wrappers.values()))
 
     def algorithm(self):
