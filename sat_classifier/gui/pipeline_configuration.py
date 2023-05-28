@@ -10,7 +10,6 @@ from qgis.core import QgsMessageLog, QgsProcessingProvider
 import qgis.core as qcore
 
 from .event_bus import EventBus, AlgorithmSelectedEvent, AlgorithmRemovedEvent, AlgorithmAddedEvent
-from .tab import Tab
 from .parameters_panel import ParametersPanel
 import processing
 from processing.tools.dataobjects import createContext
@@ -147,3 +146,7 @@ class PipelineConfiguration:
     @property
     def tab_to_add(self) -> QWidget:
         return self.config
+
+    @property
+    def tab_title(self) -> str:
+        return "Configuration"

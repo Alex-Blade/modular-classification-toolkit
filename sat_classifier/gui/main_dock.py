@@ -31,10 +31,10 @@ class MainDock(QtWidgets.QDockWidget):
         self.tab_widget.setObjectName("tab_widget")
 
         self.configuration_page: Tab = PipelineConfiguration(self.dock_widget_contents, self.provider, self.event_bus)
-        self.tab_widget.addTab(self.configuration_page.tab_to_add, "Configuration")
+        self.tab_widget.addTab(self.configuration_page.tab_to_add, self.configuration_page.tab_title)
 
         self.execution_page: Tab = PipelineExecution(self.dock_widget_contents, self.iface, self.processing_context, self.event_bus)
-        self.tab_widget.addTab(self.execution_page.tab_to_add, "Execution")
+        self.tab_widget.addTab(self.execution_page.tab_to_add, self.execution_page.tab_title)
 
         self.horizontal_layout.addWidget(self.tab_widget)
         self.setWidget(self.dock_widget_contents)

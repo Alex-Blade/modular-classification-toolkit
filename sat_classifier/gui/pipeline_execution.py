@@ -108,3 +108,7 @@ class PipelineExecution:
     @property
     def tab_to_add(self) -> QWidget:
         return self.execution_page
+
+    @property
+    def tab_title(self) -> str:
+        return "Execution"
