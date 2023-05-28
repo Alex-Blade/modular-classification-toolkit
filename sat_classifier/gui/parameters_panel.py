@@ -17,7 +17,7 @@ class ContextGenerator(QgsProcessingContextGenerator):
 
 
 class ParametersPanel(QgsProcessingParametersGenerator):
-    def __init__(self, _algorithm, iface, parent, processing_context):
+    def __init__(self, _algorithm: qcore.QgsProcessingAlgorithm, iface, parent, processing_context):
         super().__init__()
         self.parent = parent
         self.in_place = False

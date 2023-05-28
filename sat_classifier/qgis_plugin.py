@@ -4,8 +4,9 @@ from qgis.core import QgsApplication, QgsMessageLog
 import qgis.core as core
 
 from .processing.provider import Provider
-from . import gui
-from .gui.parameters_panel import ParametersPanel
+from .gui.main_dock import MainDock
+from .gui.event_bus import EventBus, SubmitExecutionEvent
+import processing
 
 
 class QGisPlugin:
@@ -13,7 +14,9 @@ class QGisPlugin:
         self.iface = iface
         self.provider = None
         self.action = None
+        self.event_bus = EventBus()
         self.dock_widget = None
+        self.event_bus.subscribe(SubmitExecutionEvent.event_type, QGisPlugin.on_execution_submit)
 
     def init_processing(self):
         """
@@ -49,13 +52,27 @@ class QGisPlugin:
         del self.action
         del self.provider
 
+    @staticmethod
+    def on_execution_submit(data: SubmitExecutionEvent):
+        QgsMessageLog.logMessage("message")
+        params = dict()
+        feedback = core.QgsProcessingFeedback(logFeedback=True)
+        context = data.panels[0].processing_context
+        intermediate_result = {}
+        for idx, panel in enumerate(data.panels):
+            params.update(panel.createProcessingParameters())
+            params.update(intermediate_result)
+            func = processing.run
+            kwargs = {"context": context, "feedback": feedback, "is_child_algorithm": True}
+            if idx == len(data.panels) - 1:
+                func = processing.runAndLoadResults
+                kwargs.pop("is_child_algorithm")
+            intermediate_result = func(f'yourplugin:{panel.algorithm().name()}', params, **kwargs)
+
     def run(self):
         QMessageBox.information(None, 'Minimal plugin', 'Do something useful here')
-
-        panels = []
         if self.dock_widget is None:
-            self.dock_widget = gui.EmptyDockWidget(self.provider, self.iface)
-            self.dock_widget.finish()
+            self.dock_widget = MainDock(self.iface, self.provider, self.event_bus)
 
         QgsMessageLog.logMessage(f"{[i.name() for i in self.provider.algorithms()]}")
 
