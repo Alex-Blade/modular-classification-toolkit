@@ -9,6 +9,7 @@ from qgis.core import QgsProcessingProvider, Qgis, QgsMessageLog
 class Provider(QgsProcessingProvider):
     INPUT_DATA_FILES = {"__init__.py", "raster_loader.py"}
     MODEL_FILES = {"__init__.py", "model.py"}
+    MISC_FILES = {"__init__.py"}
 
     @staticmethod
     def load_folder(folder, predefined_files, package="minimal"):
@@ -32,9 +33,12 @@ class Provider(QgsProcessingProvider):
     def loadAlgorithms(self, *args, **kwargs):
         import minimal.sat_classifier.mct_processing.input_data
         import minimal.sat_classifier.mct_processing.models
+        import minimal.sat_classifier.mct_processing.misc
         for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.input_data", Provider.INPUT_DATA_FILES):
             self.addAlgorithm(cls())
         for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.models", Provider.MODEL_FILES):
+            self.addAlgorithm(cls())
+        for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.misc", Provider.MISC_FILES):
             self.addAlgorithm(cls())
         custom_packages = Path.home() / "qgis_mct"
         if custom_packages.is_dir():
