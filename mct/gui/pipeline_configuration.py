@@ -1,24 +1,21 @@
 import random
 import string
+import sys
+from pathlib import Path
 
-from PyQt5 import QtGui, QtWidgets, QtCore, Qt
-from PyQt5.QtCore import pyqtSignal
+from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtGui import QIcon, QPixmap
-from PyQt5.QtWidgets import QToolBox, QWidget
-from qgis import gui
-from qgis.core import QgsMessageLog, QgsProcessingProvider
-import qgis.core as qcore
+from PyQt5.QtWidgets import QWidget
+from qgis.core import QgsProcessingProvider
 
 from .event_bus import EventBus, AlgorithmSelectedEvent, AlgorithmRemovedEvent, AlgorithmAddedEvent
-from .parameters_panel import ParametersPanel
-import processing
-from processing.tools.dataobjects import createContext
 
 
-REMOVE_PIXMAP = QPixmap("/home/user/code/minimal/x-square-svgrepo-com.svg")
+RESOURCES = Path(sys.modules["mct.gui.event_bus"].__file__).parent.parent / "resources"
+REMOVE_PIXMAP = QPixmap(str(RESOURCES / "x-square-svgrepo-com.svg"))
 REMOVE_ICON = QIcon(REMOVE_PIXMAP)
 
-ADD_PIXMAP = QPixmap("/home/user/code/minimal/add-square-svgrepo-com.svg")
+ADD_PIXMAP = QPixmap(str(RESOURCES / "add-square-svgrepo-com.svg"))
 ADD_ICON = QIcon(ADD_PIXMAP)
 
 

@@ -1,10 +1,9 @@
 [general]
-name=Minimal
-description=Minimal plugin
-about=About this minimal plugin
+name=Modular Classification Toolkit
+description=MCT
+about=About MCT
 version=1.0
 qgisMinimumVersion=3.0
-author=Martin Dobias
-email=wonder.sk@gmail.com
+author=Alexander Lakeev
 repository=URL to the code repository
 hasProcessingProvider=yes

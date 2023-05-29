@@ -28,5 +28,5 @@ class DefaultPipelineExecutor:
             if idx == len(data.panels) - 1:
                 func = processing.runAndLoadResults
                 kwargs.pop("is_child_algorithm")
-            intermediate_result = func(f'yourplugin:{panel.algorithm().name()}', params, **kwargs)
+            intermediate_result = func(f'mct:{panel.algorithm().name()}', params, **kwargs)
             self.event_bus.publish(ExecutionProgressEvent.event_type, ExecutionProgressEvent(idx + 1, steps_count))

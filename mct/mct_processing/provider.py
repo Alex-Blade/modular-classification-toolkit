@@ -12,7 +12,7 @@ class Provider(QgsProcessingProvider):
     MISC_FILES = {"__init__.py"}
 
     @staticmethod
-    def load_folder(folder, predefined_files, package="minimal"):
+    def load_folder(folder, predefined_files, package="mct"):
         files = Path(folder).iterdir()
         files = list(filter(lambda f: f.is_file() and f.name not in predefined_files, files))
         for file in files:
@@ -31,14 +31,14 @@ class Provider(QgsProcessingProvider):
         yield from Provider.load_folder(folder, predefined_files, package=package)
 
     def loadAlgorithms(self, *args, **kwargs):
-        import minimal.sat_classifier.mct_processing.input_data
-        import minimal.sat_classifier.mct_processing.models
-        import minimal.sat_classifier.mct_processing.misc
-        for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.input_data", Provider.INPUT_DATA_FILES):
+        import mct.mct_processing.input_data
+        import mct.mct_processing.models
+        import mct.mct_processing.misc
+        for cls in Provider.load_from_package("mct.mct_processing.input_data", Provider.INPUT_DATA_FILES):
             self.addAlgorithm(cls())
-        for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.models", Provider.MODEL_FILES):
+        for cls in Provider.load_from_package("mct.mct_processing.models", Provider.MODEL_FILES):
             self.addAlgorithm(cls())
-        for cls in Provider.load_from_package("minimal.sat_classifier.mct_processing.misc", Provider.MISC_FILES):
+        for cls in Provider.load_from_package("mct.mct_processing.misc", Provider.MISC_FILES):
             self.addAlgorithm(cls())
         custom_packages = Path.home() / "qgis_mct"
         if custom_packages.is_dir():
@@ -57,7 +57,7 @@ class Provider(QgsProcessingProvider):
         This string should be a unique, short, character only string,
         eg "qgis" or "gdal". This string should not be localised.
         """
-        return 'yourplugin'
+        return 'mct'
 
     def name(self, *args, **kwargs):
         """The human friendly name of your plugin in Processing.
