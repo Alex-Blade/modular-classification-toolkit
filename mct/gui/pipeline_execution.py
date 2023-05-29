@@ -1,4 +1,3 @@
-import qgis.core
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import QWidget
 import qgis.core as qcore

@@ -1,10 +1,9 @@
 from PyQt5 import QtWidgets
 from processing.gui.wrappers import WidgetWrapperFactory, WidgetWrapper
 import qgis.core as qcore
-from qgis._core import QgsProject, QgsProcessingParameterDefinition, QgsProcessingOutputLayerDefinition, QgsMessageLog
+from qgis._core import QgsProject, QgsProcessingParameterDefinition, QgsProcessingOutputLayerDefinition
 from qgis._gui import QgsProcessingContextGenerator, QgsProcessingParameterWidgetContext, \
-    QgsProcessingParametersGenerator, QgsProcessingHiddenWidgetWrapper, QgsGui, QgsProcessingGui, \
-    QgsProcessingParametersWidget
+    QgsProcessingParametersGenerator, QgsProcessingHiddenWidgetWrapper, QgsGui, QgsProcessingGui
 
 
 class ContextGenerator(QgsProcessingContextGenerator):
