@@ -6,7 +6,7 @@ from torch.utils.data import Dataset
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import SGDClassifier
-from sklearn.ensemble import IsolationForest
+from sklearn.ensemble import IsolationForest as SklearnIsolationForest
 from sklearn.svm import OneClassSVM
 import joblib
 from pathlib import Path
@@ -14,7 +14,7 @@ from pathlib import Path
 from ..models.model import Model
 
 
-__all__ = ["SVM", "SingleClassSVM", "IsolationF"]
+__all__ = ["SVM", "SingleClassSVM", "IsolationForest"]
 
 
 class LabeledDataset(Dataset):
@@ -150,7 +150,7 @@ class SingleClassSVM(Model):
             np.savez_compressed(file, res)
 
 
-class IsolationF(Model):
+class IsolationForest(Model):
     display_name = "Isolation Forest"
     name_string = "isoforest"
     model_parameters = set()
@@ -165,7 +165,7 @@ class IsolationF(Model):
         dataset = LabeledDataset(labeled_data)
         x, y = dataset[0]
         self.class_map = {1: 2, -1: 1}
-        self.clf = IsolationForest()
+        self.clf = SklearnIsolationForest()
         self.clf.fit(x, y)
 
     def save(self, file_name: str):
