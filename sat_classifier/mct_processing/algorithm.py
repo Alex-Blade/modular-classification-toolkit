@@ -32,6 +32,10 @@ class Algorithm(qcore.QgsProcessingAlgorithm):
     def initAlgorithm(self, config=None):
         ...
 
+    @abc.abstractmethod
+    def processAlgorithm(self, parameters, context, feedback):
+        ...
+
     def createInstance(self):
         """
         Initialize the algorithm

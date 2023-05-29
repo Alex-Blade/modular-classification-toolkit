@@ -5,6 +5,8 @@ from typing import Iterator, NamedTuple
 
 import numpy as np
 import qgis.core as qcore
+
+from ..algorithm import Algorithm
 from ..qgis_extensions import described
 
 
@@ -20,20 +22,15 @@ class Label(NamedTuple):
 ListOfBands = list[Label | Band]
 
 
-class RasterLoader(qcore.QgsProcessingAlgorithm):
-    _group = "Data Loaders"
-    _group_id = "data_loaders"
-    _help_string = ""
+class RasterLoader(Algorithm):
+    group_string = "Data Loaders"
+    group_id = "data_loaders"
+    help_string = ""
 
     user_inputs = {True}
 
     OUTPUT_FOLDER = "OUTPUT_FOLDER"
     CONFIG_MULTI_FILE_MODE = "multi_file"
-
-    @property
-    @abc.abstractmethod
-    def _display_name(self) -> str:
-        ...
 
     @abc.abstractmethod
     def init_parameters_single_input(self: qcore.QgsProcessingAlgorithm):
@@ -78,19 +75,19 @@ class RasterLoader(qcore.QgsProcessingAlgorithm):
         """
         Name in GUI
         """
-        return self._display_name
+        return self.display_name
 
     def group(self) -> str:
         """
         Group name in GUI
         """
-        return self._group
+        return self.group_string
 
     def groupId(self) -> str:
         """
         Group in GUI
         """
-        return self._group_id
+        return self.group_id
 
     def shortHelpString(self) -> str:
         """

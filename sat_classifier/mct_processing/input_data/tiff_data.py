@@ -15,7 +15,8 @@ class UnlabeledTiffLoader(RasterLoader):
     INPUT_RASTER = "INPUT_RASTER"
     PROCESSED_BANDS = "PROCESSED_BANDS"
     OUTPUT_FOLDER = "UNLABELED_DATA"
-    _display_name = "Unlabeled Tiff Loader"
+    display_name = "Unlabeled Tiff Loader"
+    name_string = "UnlabeledTiffLoader".lower()
 
     user_inputs = {INPUT_RASTER, PROCESSED_BANDS}
 
@@ -92,7 +93,8 @@ class LabeledTiffLoader(RasterLoader):
     POLYGON_ID_FIELD = "POLYGON_ID_FIELD"
     POLYGON_CLASS_FIELD = "POLYGON_CLASS_FIELD"
     OUTPUT_FOLDER = "LABELED_DATA"
-    _display_name = "Labeled Tiff Loader"
+    display_name = "Labeled Tiff Loader"
+    name_string = "LabeledTiffLoader".lower()
 
     user_inputs = {INPUT_RASTER, PROCESSED_BANDS, LABELS_VECTOR, POLYGON_ID_FIELD, POLYGON_CLASS_FIELD}
 
