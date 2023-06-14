@@ -21,8 +21,15 @@ class DefaultPipelineExecutor:
         steps_count = len(data.panels)
         self.event_bus.publish(ExecutionProgressEvent.event_type, ExecutionProgressEvent(0, steps_count))
         for idx, panel in enumerate(data.panels):
-            params.update(panel.createProcessingParameters())
-            params.update(intermediate_result)
+            dct = panel.createProcessingParameters()
+            all_keys = set((*dct.keys(), *intermediate_result.keys()))
+            to_upd = dict()
+            for k in all_keys:
+                for v in (intermediate_result.get(k), dct.get(k), params.get(k)):
+                    if v is not None:
+                        to_upd[k] = v
+                        break
+            params.update(to_upd)
             func = processing.run
             kwargs = {"context": context, "feedback": feedback, "is_child_algorithm": True}
             if idx == len(data.panels) - 1:
